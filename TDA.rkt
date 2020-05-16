@@ -2,6 +2,22 @@
 
 ;Definicion TDA
 
+
+;Funciones auxiliares para el TDA
+
+
+;Contar cantidad de elementos de una lista
+
+(define longitud
+    (lambda (lista)
+        (if (null? lista)
+        0
+        (+ 1 (longitud (cdr lista)))
+            )
+        )
+    )
+
+
 ;Representacion
 
 
@@ -29,7 +45,9 @@
 ;Lista de los otros elementos representados en el orden de Workspace, Index, Local Repository y Remote Repository
 ;Ej '('("Archivo1.rkt", "Archivo2.rkt", "README.md"), '("Archivo1.rkt", "Archivo2.rkt", "README.md"), '("Archivo1.rkt", "Archivo2.rkt", "README.md"), '('('(3456, 0), '(23, 03, 18), "Juan Perez", '("Archivo1.rkt", "README.md"))))
 
+
 ;Constructores
+
 
 ;Crea un commit
 
@@ -52,5 +70,20 @@
     )
 
 
+;Pertenencia
 
+
+;Pertenencia Local Repository, Workplace e Index
+;Dado que todos comparten los mismos tipos de datos, se hara una funcion para las 3 zonas
+
+(define checkArchivoLocal
+    (lambda (zona)
+        (if (null? zona)
+        #t
+            (if (string? (car zona))
+            (checkArchivoLocal (cdr zona))
+            #f)
+            )
+        )
+    )
 
