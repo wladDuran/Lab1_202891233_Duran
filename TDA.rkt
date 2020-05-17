@@ -52,10 +52,10 @@
 ;Crea un commit
 
 (define construirCommit
-    (lambda (id idAnterior dia mes ano nombre listaArchivos)
-        (list (list id idAnterior) (list dia mes ano) nombre listaArchivos)
-        )
-    )
+	(lambda (id idAnterior dia mes ano nombre listaArchivos)
+		(list (list id idAnterior) (list dia mes ano) nombre listaArchivos)
+		)
+	)
 
 
 
@@ -64,10 +64,34 @@
 ;Sale una lista con un repositorio con todas las zonas por defecto, agregando el archivo README.md que git hub coloca por defecto en la creacion del repositorio 
 
 (define crearRepositorio
-    (lambda (nombreUsuario dia mes ano)
-        (list (list "README.md"), (list ), (list "README.md"), (construirCommit 0 0 dia mes ano nombre (list "README.me")))
-        )
-    )
+	(lambda (nombreUsuario dia mes ano)
+		(list (list "README.md"), (list ), (list "README.md"), (construirCommit 0 0 dia mes ano nombre (list "README.me")))
+		)
+	)
+
+
+;Selectores
+
+
+;Selecciona al archivo en la posicion n en las zonas locales (local repository, workspace e index)
+;Ingresa el TDA que se quiere examinar, la posicion deseada y el valor para el primer elemento de la lista (0 o 1 dependiendo del gusto)
+;Sale el contenido de esa posicion
+(define posicionArchivo
+	(lambda (zonaLocal n espacioActual) 
+		(if (= n espacioActual)
+			(car zonaLocal)
+			(posicionArchivo (cdr zonaLocal) n (+ 1 espacioActual))
+			)
+		)
+	)
+
+;Seleccionar el workspace
+
+(define selecWorkSpace
+	(lambda (zonas)
+		(car zonas)
+		)
+	)
 
 
 ;Pertenencia
@@ -77,13 +101,15 @@
 ;Dado que todos comparten los mismos tipos de datos, se hara una funcion para las 3 zonas
 
 (define checkArchivoLocal
-    (lambda (zona)
-        (if (null? zona)
-        #t
-            (if (string? (car zona))
-            (checkArchivoLocal (cdr zona))
-            #f)
-            )
-        )
-    )
+	(lambda (zona)
+		(if (null? zona)
+			#t
+			(if (string? (car zona))
+				(checkArchivoLocal (cdr zona))
+				#f)
+			)
+		)
+	)
+
+
 

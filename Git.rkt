@@ -7,29 +7,14 @@
 
 ;Funciones de Git
 
-;Funcion Git
-
+;Funcion Git, funcion de orden superior para usar el resto de funciones utilizadas para mover elementos de un espacio a otro
+;Entra una funcion y sus respectivos argumentos, asi como el TDA "zonas"
+;Entrega la funcion que se introduce como argumento, aplicandolo al TDA zonas ingresado
+  
 (define git
-  (lambda (funcionEscogida)
+  (lambda (funcion)
     (lambda (zonas)
-      ;Funcion pull
-      (if (equal? funcionEscogida "pull")
-         (pull zonas)
-         ;Funcion add
-         (if (equal? funcionEscogida "add")
-             (lambda (listaCambios)
-               ((add listaCambios) zonas))
-             ;Funcion commit
-             (if (equal? funcionEscogida "commit")
-                (lambda (mensaje)
-                  ((commit mensaje) zonas))
-                ;Funcion push
-                (if (equal? funcionEscogida "push")
-                    (push zonas)
-                    #f)
-                )
-             )
-         )
+      (funcion zonas)
       )
     )
   )
