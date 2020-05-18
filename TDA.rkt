@@ -86,10 +86,58 @@
 	)
 
 ;Seleccionar el workspace
-
+;Se ingresa el TDA zonas
+;Sale el primer espacio del TDA
 (define selecWorkSpace
 	(lambda (zonas)
 		(car zonas)
+		)
+	)
+
+;Seleccionar el index
+;Se ingresa el TDA zonas
+;Sale el segundo espacio del TDA
+(define selecIndex
+	(lambda (zonas)
+		(car (cdr zonas))
+		)
+	)
+
+;Seleccionar local repository
+;Se ingresa el TDA zonas
+;Sale el tercer espacio del TDA
+(define selecLocalRepository
+	(lambda (zonas)
+		(car (cdr (cdr zonas)))
+		)
+	)
+
+;Seleccionar remote repository
+;Se ingresa el TDA zonas
+;Sale el cuarto espacio del TDA
+(define selecRemoteRepository
+	(lambda (zonas)
+		(car (cdr (cdr (cdr zonas))))
+		)
+	)
+
+;'('(3456, 443), '(23, 03, 18), "Juan Perez", '("Archivo1.rkt", "README.md"))
+
+;Seleccionar el id del commit
+;Ingresa el TDA commit
+;Sale el Id
+(define selecIdCommit
+	(lambda (commit)
+		(car (car commit))
+		)
+	)
+
+;Seleccionar el id anterior del commit
+;Ingresa el TDA commit
+;Sale el Id anterior
+(define selecIdAnteriorCommit
+	(lambda (commit)
+		(car (cdr (car commit)))
 		)
 	)
 
