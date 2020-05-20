@@ -18,7 +18,7 @@
     )
 
 
-;Representacion
+;///Representacion\\\
 
 
 ;Workspace
@@ -46,7 +46,7 @@
 ;Ej '('("Archivo1.rkt", "Archivo2.rkt", "README.md"), '("Archivo1.rkt", "Archivo2.rkt", "README.md"), '("Archivo1.rkt", "Archivo2.rkt", "README.md"), '('('(3456, 0), '(23, 03, 18), "Juan Perez", '("Archivo1.rkt", "README.md"))))
 
 
-;Constructores
+;///Constructores\\\
 
 
 ;Crea un commit
@@ -70,7 +70,7 @@
 	)
 
 
-;Selectores
+;///Selectores\\\
 
 
 ;Selecciona al archivo en la posicion n en las zonas locales (local repository, workspace e index)
@@ -141,8 +141,38 @@
 		)
 	)
 
+;Seleccionar la lista con la fecha del commit
+;Ingresa el TDA commit
+;Sale una lista con la fecha en la que fue emitido
+(define selecFechaCommit
+	(lambda (commit)
+		(car (cdr commit))
+		)
+	)
 
-;Pertenencia
+;Pendiente: Conocer dia, mes y ano
+
+
+;Seleccionar el nombre de la persona que hizo el commit
+;Ingresa el TDA commit
+;Sale un string con el nombre del autor
+(define selecAutorCommit
+	(lambda (commit)
+		(car (cdr (cdr commit)))
+		)
+	)
+
+;Seleccionar lista de archivos del commit
+;Ingresa el TDA commit
+;Sale una lista con los nombres de los archivos en forma de string
+(define selecArchivosCommit
+	(lambda (commit)
+		(car (cdr (cdr (cdr commit))))
+		)
+	)
+
+
+;///Pertenencia\\\
 
 
 ;Pertenencia Local Repository, Workplace e Index
