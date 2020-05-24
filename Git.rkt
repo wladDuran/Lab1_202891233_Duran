@@ -12,10 +12,12 @@
 ;Entrega la funcion que se introduce como argumento, aplicandolo al TDA zonas ingresado
   
 (define git
-  (lambda (funcion)
-    (lambda (zonas)
-      (funcion zonas)
-      )
+    (lambda (funcion)
+        (lambda (zonas)
+            (funcion zonas)
+            )
+        )
     )
-  )
-                  
+
+
+

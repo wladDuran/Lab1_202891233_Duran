@@ -50,10 +50,11 @@
 
 
 ;Crea un commit
-
+;Se ingresa el id del commit anterior a este, la fecha, el nombre del usuario y una lista con los archivos que van a estar en el
+;Sale un TDA commit
 (define construirCommit
-	(lambda (id idAnterior dia mes ano nombre listaArchivos)
-		(list (list id idAnterior) (list dia mes ano) nombre listaArchivos)
+	(lambda (idAnterior dia mes ano nombre listaArchivos)
+		(list (list (+ idAnterior 1) idAnterior) (list dia mes ano) nombre listaArchivos)
 		)
 	)
 
@@ -65,15 +66,16 @@
 
 (define crearRepositorio
 	(lambda (nombreUsuario dia mes ano)
-		(list (list "README.md"), (list ), (list "README.md"), (construirCommit 0 0 dia mes ano nombre (list "README.me")))
+		(list (list "README.md"), (list ), (list "README.md"), (construirCommit 0 dia mes ano nombre (list "README.me")))
 		)
 	)
+
 
 
 ;///Selectores\\\
 
 
-;Selecciona al archivo en la posicion n en las zonas locales (local repository, workspace e index)
+;Selecciona al archivo en la posicion n de una lista dada
 ;Ingresa el TDA que se quiere examinar, la posicion deseada y el valor para el primer elemento de la lista (0 o 1 dependiendo del gusto)
 ;Sale el contenido de esa posicion
 (define posicionArchivo
@@ -121,7 +123,7 @@
 		)
 	)
 
-;'('(3456, 443), '(23, 03, 18), "Juan Perez", '("Archivo1.rkt", "README.md"))
+
 
 ;Seleccionar el id del commit
 ;Ingresa el TDA commit
@@ -172,12 +174,14 @@
 	)
 
 
+
+
 ;///Pertenencia\\\
 
 
-;Pertenencia Local Repository, Workplace e Index
-;Dado que todos comparten los mismos tipos de datos, se hara una funcion para las 3 zonas
-
+;Pertenencia Local Repository, Workplace e Index, dado que todos comparten los mismos tipos de datos, se hara una funcion para las 3 zonas
+;Entra un TDA zona local, el cual puede ser tanto el Repository como Workplace e Index
+;Sale un booleano sobre si pertenece o no al TDA
 (define checkArchivoLocal
 	(lambda (zona)
 		(if (null? zona)
@@ -190,4 +194,37 @@
 	)
 
 
+;'('(3456, 443), '(23, 03, 18), "Juan Perez", '("Archivo1.rkt", "README.md"))
 
+;Pertenencia del TDA commit
+;Se ingresa un TDA commit
+;Sale un booleano sobre si pertenece o no al TDA commit
+(define checkCommit
+	(lambda (commit)
+		(and (number? (selecIdCommit commit))
+			(number? (selecIdAnteriorCommit commit))
+			(number? (car (selecFechaCommit commit)))
+			(number? (car (cdr (selecFechaCommit commit))))
+			(number? (car (cdr (cdr (selecFechaCommit commit)))))
+			(string? (selecAutorCommit commit))
+			(checkArchivoLocal (selecArchivosCommit commit))
+			)
+		)
+	)
+
+
+
+;//Modificadores\\
+
+
+;Agregar archivos a un TDA de archivos, concatenando el contenido de este con lo que se le quiera agregar (Repository, Workplace e Index)
+;Entra una lista con los archivos y otra con los archivos que se le desean agregar
+;Sale una lista con los elementos anteriores combinados
+(define agregarArchivos
+	(lambda (archivos archivosNuevos)
+		(append archivos archivosNuevos)
+		)
+	)
+
+
+;//Los operadores se encuentran en el archivo Git.rkt\\
