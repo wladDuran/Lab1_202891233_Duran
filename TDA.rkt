@@ -31,19 +31,23 @@
 
 ;Local Repository
 ;Lista de nombres de archivos
-;Ej: '("Archivo1.rkt", "Archivo2.rkt", "README.md")
+;Ej: '('('(3456, 4567), '(23, 03, 18), "Juan Perez", '("Archivo1.rkt", "README.md"), "Agregada funcion leer"), '('(4567, 0), '(20, 03, 18), "Carlos Santana", '("Archivo1.rkt", "README.md", "Primer commit")))
 
 ;Commit
-;Lista con id, fecha, persona que hizo el commit y los nombres de los archivos que 
-;Ej '('(3456, 443), '(23, 03, 18), "Juan Perez", '("Archivo1.rkt", "README.md"))
+;Lista con id, fecha, persona que hizo el commit, los nombres de los archivos que contiene y mensaje adjunto al commit
+;Ej '('(3456, 443), '(23, 03, 18), "Juan Perez", '("Archivo1.rkt", "README.md"), "Arreglado bug")
 
 ;Remote repository
 ;Lista de listas con commits, agregando el id del commit padre de este
-;Ej '('('(3456, 4567), '(23, 03, 18), "Juan Perez", '("Archivo1.rkt", "README.md")), '('(4567, 0), '(20, 03, 18), "Carlos Santana", '("Archivo1.rkt", "README.md")))
+;Ej '('('(3456, 4567), '(23, 03, 18), "Juan Perez", '("Archivo1.rkt", "README.md"), "Agregada funcion leer"), '('(4567, 0), '(20, 03, 18), "Carlos Santana", '("Archivo1.rkt", "README.md", "Primer commit")))
+
+;Registro historico
+;Registro de los comandos usados sobre el TDA zonas en orden de izquierda a derecha, siendo derecha el mas nuevo, expresado como una lista de strings
+;Ej '("git pull", "git add", "git commit"), '("git pull", "git add")
 
 ;Zonas
 ;Lista de los otros elementos representados en el orden de Workspace, Index, Local Repository y Remote Repository
-;Ej '('("Archivo1.rkt", "Archivo2.rkt", "README.md"), '("Archivo1.rkt", "Archivo2.rkt", "README.md"), '("Archivo1.rkt", "Archivo2.rkt", "README.md"), '('('(3456, 0), '(23, 03, 18), "Juan Perez", '("Archivo1.rkt", "README.md"))))
+;Ej '('("Archivo1.rkt", "Archivo2.rkt", "README.md"), '("Archivo1.rkt", "Archivo2.rkt", "README.md"), '("Archivo1.rkt", "Archivo2.rkt", "README.md"), '('('(3456, 0), '(23, 03, 18), "Juan Perez", '("Archivo1.rkt", "README.md"), "Agregada funcion leer")), '("git add", "git commit"))
 
 
 ;///Constructores\\\
@@ -53,20 +57,30 @@
 ;Se ingresa el id del commit anterior a este, la fecha, el nombre del usuario y una lista con los archivos que van a estar en el
 ;Sale un TDA commit
 (define construirCommit
-	(lambda (idAnterior dia mes ano nombre listaArchivos)
-		(list (list (+ idAnterior 1) idAnterior) (list dia mes ano) nombre listaArchivos)
+	(lambda (idAnterior fecha nombre listaArchivos mensaje)
+		(list (list (+ idAnterior 1) idAnterior) fecha nombre listaArchivos mensaje)
 		)
 	)
 
 
 
-;Crea una lista que represente las zonas cuando uno crea su primer repositorio
-;No hay input
+;Crea una lista que represente las zonas cuando uno crea su primer repositorio, con el mensaje "Primer commit" como mensaje por defecto
+;Se ingresa el nombre del usuario y la fecha en la cual se realizo
 ;Sale una lista con un repositorio con todas las zonas por defecto, agregando el archivo README.md que git hub coloca por defecto en la creacion del repositorio 
 
 (define crearRepositorio
-	(lambda (nombreUsuario dia mes ano)
-		(list (list "README.md"), (list ), (list "README.md"), (construirCommit 0 dia mes ano nombre (list "README.me")))
+	(lambda (nombreUsuario fecha)
+		(list (list "README.md"), (list ), (construirCommit 0 fecha nombre (list "README.me"), "Primer commit", (construirCommit 0 fecha nombre (list "README.me"), "Primer commit", (list )))
+		)
+	)
+
+
+;Crea un TDA Zonas con los parametros de cada espacio de la lista que lo compone
+;Entran 5 listas, cada una correspondiente a un espacio distinto del TDA zonas (workspace, index, localrepository, remote repository y el hisotrial de comandos)
+;Sale una lista correspondiente al TDA Zonas
+(define construirZonas
+	(lambda (listaWorkSpace listaIndex listaLocalRepository listaRemoteRepository listaHistorial)
+		(append listaWorkSpace listaIndex listaLocalRepository listaRemoteRepository listaHistorial)
 		)
 	)
 
@@ -123,6 +137,15 @@
 		)
 	)
 
+;Selecciona el historial de comandos
+;Se ingresa el TDA zonas
+;Sale el quinto espacio del TDA, correspondiente al historial de comandos utilizados
+(define selecHistorialComando
+	(lambda (zonas)
+		(car (cdr (cdr (cdr (cdr zonas)))))
+		)
+	)
+
 
 
 ;Seleccionar el id del commit
@@ -152,8 +175,6 @@
 		)
 	)
 
-;Pendiente: Conocer dia, mes y ano
-
 
 ;Seleccionar el nombre de la persona que hizo el commit
 ;Ingresa el TDA commit
@@ -173,14 +194,23 @@
 		)
 	)
 
+;Selecciona el mensaje del autor del commit
+;Ingresa un TDA commit
+;Sale un string con el mensaje asociado a tal commit
+(define selecMensajeCommit
+	(lambda (commit)
+		(car (cdr (cdr (cdr (cdr commit)))))
+		)
+	)
+
 
 
 
 ;///Pertenencia\\\
 
 
-;Pertenencia Local Repository, Workplace e Index, dado que todos comparten los mismos tipos de datos, se hara una funcion para las 3 zonas
-;Entra un TDA zona local, el cual puede ser tanto el Repository como Workplace e Index
+;Pertenencia Workplace, Index e Historial, dado que todos comparten los mismos tipos de datos, se hara una funcion para las 3 zonas
+;Entra un TDA zona local, el cual puede ser tanto Workplace, Index e Historial
 ;Sale un booleano sobre si pertenece o no al TDA
 (define checkArchivoLocal
 	(lambda (zona)
@@ -208,10 +238,40 @@
 			(number? (car (cdr (cdr (selecFechaCommit commit)))))
 			(string? (selecAutorCommit commit))
 			(checkArchivoLocal (selecArchivosCommit commit))
+			(string? (selecMensajeCommit commit))
 			)
 		)
 	)
 
+
+;Revisa si es que todos los elementso de una lista pertenecen al tipo de dato Commit
+;Entra una lista
+;Sale un booleano
+(define checkListaCommit
+	(lambda (listaCommits)
+		(if (null? (car listaCommits))
+			#t
+			(if (checkCommit (car listaCommits))
+				(checkListaCommit (cdr listaCommits))
+				#f)
+			)
+		)
+	)
+
+
+;Revisa si es que una lista entregada pertenece al TDA Zonas
+;Entra una lista
+;Sale un booleano
+(define checkZonas
+	(lambda (zonas)
+		(and (checkArchivoLocal (selecWorkSpace zonas))
+			(checkArchivoLocal (selecIndex zonas))
+			(checkListaCommit (selecLocalRepository zonas))
+			(checkListaCommit (selecRemoteRepository zonas))
+			(checkArchivoLocal (selecHistorialComando))
+			)
+		)
+	)
 
 
 ;//Modificadores\\

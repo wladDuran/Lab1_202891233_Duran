@@ -39,8 +39,9 @@
     )
 
 
-;Funcion recursiva de git pull (cola)
+;Funcion recursiva de git pull (cola), , saca los elementos del remote repository y los deja en el remote repository, actualizando los archivos que compartan el mismo nombre
 ;Se ingresa la lista del TDA workspace y remote repository, ademas de ingresar un 0 para la recursion y la cantidad de elementos en el workspace
+;Sale la lista del workspace con los elementos del repositorio remoto
 (define pullEnmascarar
     (lambda (listaRemote listaWorkSpace cantidadElemRemote cantidadElemWork)
         (if (= cantidadElemRemote cantidadElemWork)
@@ -60,7 +61,71 @@
 ;Sale un TDA zonas con los cambios respectivos a pull realizados
 (define pull
     (lambda (zonas)
-        (append (pullEnmascarar (selecRemoteRepository zonas) (selecWorkspace zonas) (longitud (selecRemoteRepository zonas)) 0) (selecIndex zonas) (selecLocalRepository zonas) (selecRemoteRepository zonas))
+        (if (checkZonas zonas)
+            (construirZonas (pullEnmascarar (selecRemoteRepository zonas) (selecWorkspace zonas) (longitud (selecRemoteRepository zonas)) 0) (selecIndex zonas) (selecLocalRepository zonas) (selecRemoteRepository zonas) (append selecHistorialComando "git pull"))
+            #f
+            )
+        )
+    )
+
+
+;Funcion recursiva de git add (natural)
+;Se ingresa la lista correspondiente al workspace y al index en el TDA zonas
+;Sale la Lista de Index modificada con sus valores cambiados
+(define addEnmascarar
+    (lambda (listaWorkSpace listaIndex)
+        (if (null? (car listaWorkSpace))
+            listaIndex
+            (if (buscarArchivoRep (car listaWorkSpace) listaIndex)
+                (addEnmascarar (cdr listaWorkSpace) listaIndex)
+                (addEnmascarar (cdr listaWorkSpace) (cons (car listaWorkSpace) listaIndex))
+                )
+            )
+        )
+    )
+
+
+;Agrega una lista del tipo de dato archivo al TDA Zonas en el espacio Index
+;Se ingresa la lista que se desea ingresar y el TDA Zonas
+;Sale el TDA zonas modificado
+(define add
+    (lambda (listaArchivos)
+        (lambda (zonas)
+            (if (checkZonas zonas)
+                (construirZonas (selecWorkspace zonas) (addEnmascarar listaArchivos (selecIndex zonas)) (selecLocalRepository zonas) (selecRemoteRepository zonas) (cons (selecHistorialComando zonas) "git add"))
+                #f
+                )
+            )
+        )
+    )
+
+;Agrega los elementos del Index a una lista para luego transofrmarlos en commit
+;Entra la lista de archivos de la zona Index y Local Repository
+;Sale la lista para el Local Repository modificada
+(define commitEnmascarar
+    (lambda (listaIndex listaLocalRepository)
+        (if (null? (car listaIndex))
+            listaLocalRepository
+            (if (buscarArchivoRep (car listaIndex) listaLocalRepository)
+                (commitEnmascarar (cdr listaIndex listaLocalRepository))
+                (commitEnmascarar (cdr listaIndex) (cons (car listaIndex) listaLocalRepository))
+                )
+            )
+        )
+    )
+
+
+;Mueve los elementos del Index al local repository en forma de commit
+;Entra el mensaje que se quiere colocar en el commit y el TDA zonas
+;Sale el TDA Zonas con las modificaciones pertinentes a la funcion
+(define commit
+    (lambda (mensaje)
+        (lambda (zonas)
+            (if (checkZonas zonas)
+                (construirZonas (selecWorkspace zonas) (list ) (construirCommit (selecIdCommit (car (selecRemoteRepository zonas))) (list 01 06 2020) "Usuario" (commitEnmascarar (selecIndex zonas) (selecLocalRepository zonas)) mensaje) (selecRemoteRepository zonas) (cons (selecHistorialComando zonas) "git commit"))
+                #f
+                )
+            )
         )
     )
 
