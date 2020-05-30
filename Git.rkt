@@ -99,6 +99,8 @@
         )
     )
 
+
+
 ;Agrega los elementos del Index a una lista para luego transofrmarlos en commit
 ;Entra la lista de archivos de la zona Index y Local Repository
 ;Sale la lista para el Local Repository modificada
@@ -106,10 +108,7 @@
     (lambda (listaIndex listaLocalRepository)
         (if (null? (car listaIndex))
             listaLocalRepository
-            (if (buscarArchivoRep (car listaIndex) listaLocalRepository)
-                (commitEnmascarar (cdr listaIndex listaLocalRepository))
-                (commitEnmascarar (cdr listaIndex) (cons (car listaIndex) listaLocalRepository))
-                )
+            (commitEnmascarar (cdr listaIndex) (cons (car listaIndex) listaLocalRepository))
             )
         )
     )
@@ -129,3 +128,79 @@
         )
     )
 
+
+;Dado un dato tipo Commit, busca en una lista si es que este esta o no
+;Entra el commit buscado y la lista en la que se desea buscar
+;Sale un booleano sobre si existe o no en tal lista
+(define buscarCommitIgual
+    (lambda (commitBuscar listaBuscar)
+        (if (null? (car listaBuscar))
+            #f
+            (if (= (selecIdCommit commit) (selecIdCommit (car listaBuscar)))
+                #t
+                (buscarCommitIgual commitBuscar (cdr listaBuscar))
+                )
+            )
+        )
+    )
+
+
+;Mueve los Commits que existan del Local Repository al Remote Repository
+;Entra la lista del local repository y el remote repository
+;Sale la lista del local remote modificada con los elementos del local repository
+(define pushEnmascarar
+    (lambda (listaLocalRepository listaRemoteRepository)
+        (if (null? (car listaLocalRepository))
+            listaLocalRepository
+            (if (buscarCommitIgual (car listaLocalRepository) listaRemoteRepository)
+                (pushEnmascarar (cdr listaLocalRepository) (cdr listaRemoteRepository))
+                (pushEnmascarar (cdr listaLocalRepository) (cons (car listaLocalRepository) listaRemoteRepository))
+                )
+            )
+        )
+    )
+
+
+;Mueve los Commits que existan del Local Repository al Remote Repository
+;Entra un TDA zonas
+;Sale el TDA zonas con sus elementos modificados
+(define push
+    (lambda (zonas)
+        (if (checkZonas zonas)
+            (construirZonas (selecWorkspace zonas) (list ) (selecLocalRepository zonas) (pushEnmascarar (selecLocalRepository zonas) (selecRemoteRepository zonas)) (cons (selecHistorialComando zonas) "git push"))
+            #f
+            )
+        )
+    )
+
+
+;Concatena en un string separado por saltos de linea el contenido de una lista con archivos (workspace e index)
+;Entra una lista con el contenido del workspace y un string sin elementos ("")
+;Sale el string con el contenido de del workspace
+(define mostrarArchivoLocal
+    (lambda (listaArchivoLocal stringArchivoLocal)
+        (if (null? (car listaArchivoLocal))
+            stringArchivoLocal
+            (mostrarArchivoLocal (cdr listaArchivoLocal) (string-append stringArchivoLocal (car listaArchivoLocal) "\n"))
+            )
+        )
+    )
+
+
+(define commit->string
+    (lambda (listaCommits stringCommit)
+        (string-append (number->string (selecIdCommit (car listaCommits))) (number->string (selecIdAnteriorCommit (car listaCommits))) )))
+
+(define mostrarCommits
+    (lambda (listaCommits stringCommits)
+        (if (null? (car listaCommits))
+            stringCommits
+            (mostrarCommits (cdr listaCommits) (string-append (selecIdCommit (car listaCommits)) )))))
+
+;'('(3456, 443), '(23, 03, 18), "Juan Perez", '("Archivo1.rkt", "README.md"), "Arreglado bug")
+
+(define zonas->string
+    (lambda (zonas)
+        (string-append "WorkSpace:\n" (mostrarArchivoLocal (selecWorkspace zonas) "") "\n\n" 
+        "Index:\n" (mostrarArchivoLocal (selecIndex zonas) "") "\n\n"
+        "Local Repository:\n" ())))
