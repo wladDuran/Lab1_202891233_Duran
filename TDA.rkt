@@ -1,5 +1,9 @@
 #lang racket
 
+;Exportar definiciones
+
+(provide all-defined-out)
+
 ;Definicion TDA
 
 

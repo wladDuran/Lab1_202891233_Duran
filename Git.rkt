@@ -2,8 +2,11 @@
 
 ;Simulador de Git
 ;Por Wladimir Duran
-;Version 1.0
+;Version 1.2
 
+;Importar TDA externo
+
+(require "TDA.rkt")
 
 ;Funciones auxiliares
 
@@ -175,8 +178,8 @@
 
 
 ;Concatena en un string separado por saltos de linea el contenido de una lista con archivos (workspace e index)
-;Entra una lista con el contenido del workspace y un string sin elementos ("")
-;Sale el string con el contenido de del workspace
+;Entra una lista con el contenido del archivo local y un string sin elementos ("")
+;Sale el string con el contenido de del archivo local
 (define mostrarArchivoLocal
     (lambda (listaArchivoLocal stringArchivoLocal)
         (if (null? (car listaArchivoLocal))
@@ -186,21 +189,42 @@
         )
     )
 
-
+;Transforma un TDA del tipo commit a un string leible
+;Ingresa la lista correspondiente a un TDA commit
+;Sale un string legible de todas las zonas de un commit
 (define commit->string
-    (lambda (listaCommits stringCommit)
-        (string-append (number->string (selecIdCommit (car listaCommits))) (number->string (selecIdAnteriorCommit (car listaCommits))) )))
+    (lambda (commit)
+        (string-append 
+        "Id: " (number->string (selecIdCommit commit)) "\n" 
+        "Id Anterior: " (number->string (selecIdAnteriorCommit commit)) "\n" 
+        "Fecha: " (number->string (car (selecFechaCommit commit))) "/" (number->string (car (cdr (selecFechaCommit commit)))) "/" (number->string (car (cdr (cdr (selecFechaCommit commit))))) "\n" 
+        "Autor: " (selecAutorCommit commit) "\n" 
+        "Archivos: " (mostrarArchivoLocal (selecArchivosCommit commit) "") "\n" 
+        "Mensaje: " (selecMensajeCommit commit) "\n")
+        )
+    )
 
+
+;
 (define mostrarCommits
     (lambda (listaCommits stringCommits)
         (if (null? (car listaCommits))
             stringCommits
-            (mostrarCommits (cdr listaCommits) (string-append (selecIdCommit (car listaCommits)) )))))
+            (mostrarCommits (cdr listaCommits) (string-append stringCommits "\n\n" (commit->string (car listaCommits))))
+            )
+        )
+    )
 
-;'('(3456, 443), '(23, 03, 18), "Juan Perez", '("Archivo1.rkt", "README.md"), "Arreglado bug")
 
+
+;Transforma un TDA Zonas dado a una representacion en string legible
+;Entra un TDA Zonas Valido
+;Sale un string con una representacion de los elementos del TDA zonas
 (define zonas->string
     (lambda (zonas)
-        (string-append "WorkSpace:\n" (mostrarArchivoLocal (selecWorkspace zonas) "") "\n\n" 
-        "Index:\n" (mostrarArchivoLocal (selecIndex zonas) "") "\n\n"
-        "Local Repository:\n" ())))
+        (string-append "WorkSpace:\n" (mostrarArchivoLocal (selecWorkspace zonas) "") "\n\n\n" 
+        "Index:\n" (mostrarArchivoLocal (selecIndex zonas) "") "\n\n\n"
+        "Local Repository:\n" (mostrarCommits (selecLocalRepository zonas) "") "\n\n\n" 
+        "Remote Repository:\n" (mostrarCommits (selecRemoteRepository zonas) "") "\n\n\n")
+        )
+    )
