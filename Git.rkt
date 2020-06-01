@@ -1,30 +1,14 @@
 #lang racket
 
 ;Simulador de Git
-;Por Wladimir Duran
-;Version 1.2
+;Por Wladimir Duran 20.289.123-3
+;Version 1.4
 
 ;Importar TDA externo
 
 (require "TDA.rkt")
 
-;Funciones auxiliares
-
-;Buscar un string en una lista dada, retorna True si esta, y False si es que no esta
-;Entra el nombre del string que se desea buscar y la lista
-;Retorna un True o un False
-(define buscarArchivoRep
-    (lambda (archivoBuscar lista)
-        (if (null? (cdr lista))
-            #f
-            (if (equal? archivoBuscar (car lista))
-                #t
-                (buscarArchivoRep archivoBuscar (cdr lista))
-                )
-            )
-        )
-    )
-        
+    
 
 
 ;Funciones de Git
@@ -42,21 +26,6 @@
     )
 
 
-;Funcion recursiva de git pull (cola), , saca los elementos del remote repository y los deja en el remote repository, actualizando los archivos que compartan el mismo nombre
-;Se ingresa la lista del TDA workspace y remote repository, ademas de ingresar un 0 para la recursion y la cantidad de elementos en el workspace
-;Sale la lista del workspace con los elementos del repositorio remoto
-(define pullEnmascarar
-    (lambda (listaRemote listaWorkSpace cantidadElemRemote cantidadElemWork)
-        (if (= cantidadElemRemote cantidadElemWork)
-            listaWorkSpace
-            (if (buscarArchivoRep (car listaRemote) listaWorkSpace)
-                (pullEnmascarar (cdr listaRemote) listaWorkSpace cantidadElemRemote (+ cantidadElemWork 1))
-                (pullEnmascarar (cdr listaRemote) (append (car listaRemote) listaWorkSpace) cantidadElemRemote (+ cantidadElemWork 1))
-                )
-            )
-        )
-    )
-
 
 
 ;Funcion git pull, saca los elementos del remote repository y los deja en el remote repository, actualizando los archivos que compartan el mismo nombre
@@ -65,27 +34,13 @@
 (define pull
     (lambda (zonas)
         (if (checkZonas zonas)
-            (construirZonas (pullEnmascarar (selecRemoteRepository zonas) (selecWorkspace zonas) (longitud (selecRemoteRepository zonas)) 0) (selecIndex zonas) (selecLocalRepository zonas) (selecRemoteRepository zonas) (append selecHistorialComando "git pull"))
+            (construirZonas (pullEnmascarar (selecArchivosCommit (car (selecRemoteRepository zonas))) (selecWorkSpace zonas) (longitud (selecRemoteRepository zonas)) 0) (selecIndex zonas) (selecLocalRepository zonas) (selecRemoteRepository zonas) (append (selecHistorialComando zonas) (list "git pull")))
             #f
             )
         )
     )
 
 
-;Funcion recursiva de git add (natural)
-;Se ingresa la lista correspondiente al workspace y al index en el TDA zonas
-;Sale la Lista de Index modificada con sus valores cambiados
-(define addEnmascarar
-    (lambda (listaWorkSpace listaIndex)
-        (if (null? (car listaWorkSpace))
-            listaIndex
-            (if (buscarArchivoRep (car listaWorkSpace) listaIndex)
-                (addEnmascarar (cdr listaWorkSpace) listaIndex)
-                (addEnmascarar (cdr listaWorkSpace) (cons (car listaWorkSpace) listaIndex))
-                )
-            )
-        )
-    )
 
 
 ;Agrega una lista del tipo de dato archivo al TDA Zonas en el espacio Index
@@ -95,7 +50,7 @@
     (lambda (listaArchivos)
         (lambda (zonas)
             (if (checkZonas zonas)
-                (construirZonas (selecWorkspace zonas) (addEnmascarar listaArchivos (selecIndex zonas)) (selecLocalRepository zonas) (selecRemoteRepository zonas) (cons (selecHistorialComando zonas) "git add"))
+                (construirZonas (selecWorkSpace zonas) (addEnmascarar listaArchivos (selecIndex zonas)) (selecLocalRepository zonas) (selecRemoteRepository zonas) (append (selecHistorialComando zonas) (list "git add")))
                 #f
                 )
             )
@@ -103,18 +58,6 @@
     )
 
 
-
-;Agrega los elementos del Index a una lista para luego transofrmarlos en commit
-;Entra la lista de archivos de la zona Index y Local Repository
-;Sale la lista para el Local Repository modificada
-(define commitEnmascarar
-    (lambda (listaIndex listaLocalRepository)
-        (if (null? (car listaIndex))
-            listaLocalRepository
-            (commitEnmascarar (cdr listaIndex) (cons (car listaIndex) listaLocalRepository))
-            )
-        )
-    )
 
 
 ;Mueve los elementos del Index al local repository en forma de commit
@@ -124,7 +67,7 @@
     (lambda (mensaje)
         (lambda (zonas)
             (if (checkZonas zonas)
-                (construirZonas (selecWorkspace zonas) (list ) (construirCommit (selecIdCommit (car (selecRemoteRepository zonas))) (list 01 06 2020) "Usuario" (commitEnmascarar (selecIndex zonas) (selecLocalRepository zonas)) mensaje) (selecRemoteRepository zonas) (cons (selecHistorialComando zonas) "git commit"))
+                (construirZonas (selecWorkSpace zonas) (list ) (append (list (construirCommit (selecIdCommit (car (selecRemoteRepository zonas))) (selecFechaCommit (car (selecRemoteRepository zonas))) (selecAutorCommit (car (selecRemoteRepository zonas))) (selecIndex zonas) mensaje)) (selecLocalRepository zonas)) (selecRemoteRepository zonas) (append (selecHistorialComando zonas) (list "git commit")))
                 #f
                 )
             )
@@ -132,36 +75,7 @@
     )
 
 
-;Dado un dato tipo Commit, busca en una lista si es que este esta o no
-;Entra el commit buscado y la lista en la que se desea buscar
-;Sale un booleano sobre si existe o no en tal lista
-(define buscarCommitIgual
-    (lambda (commitBuscar listaBuscar)
-        (if (null? (car listaBuscar))
-            #f
-            (if (= (selecIdCommit commit) (selecIdCommit (car listaBuscar)))
-                #t
-                (buscarCommitIgual commitBuscar (cdr listaBuscar))
-                )
-            )
-        )
-    )
 
-
-;Mueve los Commits que existan del Local Repository al Remote Repository
-;Entra la lista del local repository y el remote repository
-;Sale la lista del local remote modificada con los elementos del local repository
-(define pushEnmascarar
-    (lambda (listaLocalRepository listaRemoteRepository)
-        (if (null? (car listaLocalRepository))
-            listaLocalRepository
-            (if (buscarCommitIgual (car listaLocalRepository) listaRemoteRepository)
-                (pushEnmascarar (cdr listaLocalRepository) (cdr listaRemoteRepository))
-                (pushEnmascarar (cdr listaLocalRepository) (cons (car listaLocalRepository) listaRemoteRepository))
-                )
-            )
-        )
-    )
 
 
 ;Mueve los Commits que existan del Local Repository al Remote Repository
@@ -170,51 +84,15 @@
 (define push
     (lambda (zonas)
         (if (checkZonas zonas)
-            (construirZonas (selecWorkspace zonas) (list ) (selecLocalRepository zonas) (pushEnmascarar (selecLocalRepository zonas) (selecRemoteRepository zonas)) (cons (selecHistorialComando zonas) "git push"))
+            (construirZonas (selecWorkSpace zonas) (list ) (selecLocalRepository zonas) (pushEnmascarar (selecLocalRepository zonas) (selecRemoteRepository zonas)) (append (selecHistorialComando zonas) (list "git push")))
             #f
             )
         )
     )
 
 
-;Concatena en un string separado por saltos de linea el contenido de una lista con archivos (workspace e index)
-;Entra una lista con el contenido del archivo local y un string sin elementos ("")
-;Sale el string con el contenido de del archivo local
-(define mostrarArchivoLocal
-    (lambda (listaArchivoLocal stringArchivoLocal)
-        (if (null? (car listaArchivoLocal))
-            stringArchivoLocal
-            (mostrarArchivoLocal (cdr listaArchivoLocal) (string-append stringArchivoLocal (car listaArchivoLocal) "\n"))
-            )
-        )
-    )
 
-;Transforma un TDA del tipo commit a un string leible
-;Ingresa la lista correspondiente a un TDA commit
-;Sale un string legible de todas las zonas de un commit
-(define commit->string
-    (lambda (commit)
-        (string-append 
-        "Id: " (number->string (selecIdCommit commit)) "\n" 
-        "Id Anterior: " (number->string (selecIdAnteriorCommit commit)) "\n" 
-        "Fecha: " (number->string (car (selecFechaCommit commit))) "/" (number->string (car (cdr (selecFechaCommit commit)))) "/" (number->string (car (cdr (cdr (selecFechaCommit commit))))) "\n" 
-        "Autor: " (selecAutorCommit commit) "\n" 
-        "Archivos: " (mostrarArchivoLocal (selecArchivosCommit commit) "") "\n" 
-        "Mensaje: " (selecMensajeCommit commit) "\n")
-        )
-    )
-
-
-;
-(define mostrarCommits
-    (lambda (listaCommits stringCommits)
-        (if (null? (car listaCommits))
-            stringCommits
-            (mostrarCommits (cdr listaCommits) (string-append stringCommits "\n\n" (commit->string (car listaCommits))))
-            )
-        )
-    )
-
+;Requerimientos extra
 
 
 ;Transforma un TDA Zonas dado a una representacion en string legible
@@ -222,9 +100,58 @@
 ;Sale un string con una representacion de los elementos del TDA zonas
 (define zonas->string
     (lambda (zonas)
-        (string-append "WorkSpace:\n" (mostrarArchivoLocal (selecWorkspace zonas) "") "\n\n\n" 
+        (string-append "WorkSpace:\n" (mostrarArchivoLocal (selecWorkSpace zonas) "") "\n\n\n" 
         "Index:\n" (mostrarArchivoLocal (selecIndex zonas) "") "\n\n\n"
         "Local Repository:\n" (mostrarCommits (selecLocalRepository zonas) "") "\n\n\n" 
         "Remote Repository:\n" (mostrarCommits (selecRemoteRepository zonas) "") "\n\n\n")
         )
     )
+
+
+
+
+;Entrega un string con informacion de la zona de trabajo (Cantidad de archivos en el index, cantidad de commits en el local repository y la rama actual)
+;Entra la zona que se desea consultar
+;Sale el string con la informacion deseada
+(define status
+    (lambda (zonas)
+        (string-append "Cantidad Archivos Index: " (number->string (longitud (selecIndex zonas))) "\n"
+        "Cantidad de commits en el local repository: " (number->string (longitud (selecLocalRepository zonas))) "\n"
+        "Rama: Master")
+        )
+    )
+
+
+
+
+;Muestra el Id, el Id anterior y el mensaje de los ultimos 5 commits del repositorio
+;Entra un TDA zonas
+;Sale un string con los Ids y mensajes de los 5 ultimos commits
+(define log
+    (lambda (zonas)
+        (logMascara (selecRemoteRepository zonas) 0 "")
+        )
+    )
+
+
+
+
+;Ejemplos de uso funciones
+
+
+;Git
+;(Git se debe usar previo a la aplicacion de cada funcion, por lo que sus argumentos varian dependiendo la que se desee usar)
+;Por esta razon, los ejemplos de uso estaran con cada una de las funciones a continuacion
+;((git log) '(("README.md")
+; ()
+;  (((1 0)
+;    (15 6 20)
+;    "Pedro Gonzalez"
+;    ("README.me")
+;    "Primer commit"))
+;  (((1 0)
+;    (15 6 20)
+;    "Pedro Gonzalez"
+;    ("README.me")
+;    "Primer commit")) 
+;    ()))

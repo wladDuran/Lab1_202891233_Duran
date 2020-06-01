@@ -11,8 +11,7 @@
 
 
 ;Contar cantidad de elementos de una lista
-;Entra una lista
-;Sale el numero de elementos que esta contiene
+
 (define longitud
     (lambda (lista)
         (if (null? lista)
@@ -23,70 +22,36 @@
     )
 
 
-;Buscar un string en una lista dada, retorna True si esta, y False si es que no esta
-;Entra el nombre del string que se desea buscar y la lista
-;Retorna un True o un False
-(define buscarArchivoRep
-    (lambda (archivoBuscar lista)
-        (if (null? lista)
-            #f
-            (if (equal? archivoBuscar (car lista))
-                #t
-                (buscarArchivoRep archivoBuscar (cdr lista))
-                )
-            )
-        )
-    )
-
-
-
-;Funcion mastara de log. Entrega un Id con los Ids y el mensaje de los 5 ultimos commits
-;Entra una lista que corresponda al remote repository, un 0 y un string vacio
-;Sale el string con los ids y mensajes de los ultimos 5 commits
-(define logMascara
-    (lambda (listaRemoteRepository cantidadCommits stringCommits)
-        (if (or (= cantidadCommits 5) (null? listaRemoteRepository))
-            stringCommits
-            (logMascara (cdr listaRemoteRepository) (+ cantidadCommits 1) (string-append stringCommits "Id: " (number->string (selecIdCommit (car listaRemoteRepository))) " "
-            "Id Commit Anterior: " (number->string (selecIdAnteriorCommit (car listaRemoteRepository))) " "
-            "Mensaje: " (selecMensajeCommit (car listaRemoteRepository)) "\n\n"))
-            )
-        )
-    )
-	
-
-
-
 ;///Representacion\\\
 
 
 ;Workspace
 ;Lista de nombres de archivos
-;Ej: '("Archivo1.rkt" "Archivo2.rkt" "README.md")
+;Ej: '("Archivo1.rkt", "Archivo2.rkt", "README.md")
 
 ;Index
 ;Lista de nombres de archivos
-;Ej: '("Archivo1.rkt" "Archivo2.rkt" "README.md")
+;Ej: '("Archivo1.rkt", "Archivo2.rkt", "README.md")
 
 ;Local Repository
 ;Lista de nombres de archivos
-;Ej: '(((3456 4567) (23 03 18) "Juan Perez" ("Archivo1.rkt" "README.md") "Agregada funcion leer") ((4567 0) (20 03 18) "Carlos Santana" ("Archivo1.rkt" "README.md") "Primer commit")))
+;Ej: '('('(3456, 4567), '(23, 03, 18), "Juan Perez", '("Archivo1.rkt", "README.md"), "Agregada funcion leer"), '('(4567, 0), '(20, 03, 18), "Carlos Santana", '("Archivo1.rkt", "README.md", "Primer commit")))
 
 ;Commit
 ;Lista con id, fecha, persona que hizo el commit, los nombres de los archivos que contiene y mensaje adjunto al commit
-;Ej '((3456 443) (23 03 18) "Juan Perez" ("Archivo1.rkt" "README.md") "Arreglado bug")
+;Ej '('(3456, 443), '(23, 03, 18), "Juan Perez", '("Archivo1.rkt", "README.md"), "Arreglado bug")
 
 ;Remote repository
 ;Lista de listas con commits, agregando el id del commit padre de este
-;Ej '(((3456 4567) (23 03 18) "Juan Perez" ("Archivo1.rkt" "README.md") "Agregada funcion leer") ((4567 0) (20 03 18) "Carlos Santana" ("Archivo1.rkt" "README.md" "Primer commit")))
+;Ej '('('(3456, 4567), '(23, 03, 18), "Juan Perez", '("Archivo1.rkt", "README.md"), "Agregada funcion leer"), '('(4567, 0), '(20, 03, 18), "Carlos Santana", '("Archivo1.rkt", "README.md", "Primer commit")))
 
 ;Registro historico
 ;Registro de los comandos usados sobre el TDA zonas en orden de izquierda a derecha, siendo derecha el mas nuevo, expresado como una lista de strings
-;Ej '("git pull" "git add" "git commit")
+;Ej '("git pull", "git add", "git commit"), '("git pull", "git add")
 
 ;Zonas
 ;Lista de los otros elementos representados en el orden de Workspace, Index, Local Repository y Remote Repository
-;Ej '(("Archivo1.rkt" "Archivo2.rkt" "README.md") ("Archivo1.rkt" "Archivo2.rkt" "README.md") (((3456 0) (23 03 18) "Juan Perez" ("Archivo1.rkt" "README.md") "Agregada funcion leer")) (((3456 0) (23 03 18) "Juan Perez" ("Archivo1.rkt" "README.md") "Agregada funcion leer")) ("git add" "git commit"))
+;Ej '('("Archivo1.rkt", "Archivo2.rkt", "README.md"), '("Archivo1.rkt", "Archivo2.rkt", "README.md"), '("Archivo1.rkt", "Archivo2.rkt", "README.md"), '('('(3456, 0), '(23, 03, 18), "Juan Perez", '("Archivo1.rkt", "README.md"), "Agregada funcion leer")), '("git add", "git commit"))
 
 
 ;///Constructores\\\
@@ -328,114 +293,4 @@
 	)
 
 
-;//Operadores\\
-
-
-
-
-;Funcion recursiva de git pull (cola), , saca los elementos del remote repository y los deja en el remote repository, actualizando los archivos que compartan el mismo nombre
-;Se ingresa la lista del TDA workspace y remote repository, ademas de ingresar un 0 para la recursion y la cantidad de elementos en el workspace
-;Sale la lista del workspace con los elementos del repositorio remoto
-(define pullEnmascarar
-    (lambda (listaRemote listaWorkSpace cantidadElemRemote cantidadElemWork)
-        (if (= cantidadElemRemote cantidadElemWork)
-            listaWorkSpace          ;Lista del ultimo commit
-            (if (buscarArchivoRep (car listaRemote) listaWorkSpace)
-                (pullEnmascarar (cdr listaRemote) listaWorkSpace cantidadElemRemote (+ cantidadElemWork 1))
-                (pullEnmascarar (cdr listaRemote) (append (car (list listaRemote)) listaWorkSpace) cantidadElemRemote (+ cantidadElemWork 1))
-                )
-            )
-        )
-    )
-
-
-;Funcion recursiva de git add (natural)
-;Se ingresa la lista correspondiente al workspace y al index en el TDA zonas
-;Sale la Lista de Index modificada con sus valores cambiados
-(define addEnmascarar
-    (lambda (listaWorkSpace listaIndex)
-        (if (null? listaWorkSpace)
-            listaIndex
-            (if (buscarArchivoRep (car listaWorkSpace) listaIndex)
-                (addEnmascarar (cdr listaWorkSpace) listaIndex)
-                (addEnmascarar (cdr listaWorkSpace) (cons (car listaWorkSpace) listaIndex))
-                )
-            )
-        )
-    )
-
-
-;Dado un dato tipo Commit, busca en una lista si es que este esta o no
-;Entra el commit buscado y la lista en la que se desea buscar
-;Sale un booleano sobre si existe o no en tal lista
-(define buscarCommitIgual
-    (lambda (commitBuscar listaBuscar)
-        (if (null? listaBuscar)
-            #f
-            (if (= (selecIdCommit commitBuscar) (selecIdCommit (car listaBuscar)))
-                #t
-                (buscarCommitIgual commitBuscar (cdr listaBuscar))
-                )
-            )
-        )
-    )
-
-
-;Mueve los Commits que existan del Local Repository al Remote Repository
-;Entra la lista del local repository y el remote repository
-;Sale la lista del local remote modificada con los elementos del local repository
-(define pushEnmascarar
-    (lambda (listaLocalRepository listaRemoteRepository)
-        (if (null? listaLocalRepository)
-            listaRemoteRepository
-            (if (buscarCommitIgual (car listaLocalRepository) listaRemoteRepository)
-                (pushEnmascarar (cdr listaLocalRepository) listaRemoteRepository)
-                (pushEnmascarar (cdr listaLocalRepository) (append (list (car listaLocalRepository)) listaRemoteRepository))
-                )
-            )
-        )
-    )
-
-
-
-;Concatena en un string separado por saltos de linea el contenido de una lista con archivos (workspace e index)
-;Entra una lista con el contenido del archivo local y un string sin elementos ("")
-;Sale el string con el contenido de del archivo local
-(define mostrarArchivoLocal
-    (lambda (listaArchivoLocal stringArchivoLocal)
-        (if (null? listaArchivoLocal)
-            stringArchivoLocal
-            (mostrarArchivoLocal (cdr listaArchivoLocal) (string-append stringArchivoLocal (car listaArchivoLocal) "\n"))
-            )
-        )
-    )
-
-
-;Transforma un TDA del tipo commit a un string leible
-;Ingresa la lista correspondiente a un TDA commit
-;Sale un string legible de todas las zonas de un commit
-(define commit->string
-    (lambda (commit)
-        (string-append 
-        "Id: " (number->string (selecIdCommit commit)) "\n" 
-        "Id Anterior: " (number->string (selecIdAnteriorCommit commit)) "\n" 
-        "Fecha: " (number->string (car (selecFechaCommit commit))) "/" (number->string (car (cdr (selecFechaCommit commit)))) "/" (number->string (car (cdr (cdr (selecFechaCommit commit))))) "\n" 
-        "Autor: " (selecAutorCommit commit) "\n" 
-        "Archivos:\n" (mostrarArchivoLocal (selecArchivosCommit commit) "") "\n" 
-        "Mensaje: " (selecMensajeCommit commit) "\n")
-        )
-    )
-
-
-
-;Transforma los archivos de un TDA tipo commit a un string continuo con saltos de lineas
-;Entra la lista de los commits y un string vacio
-;Sale un string con todos los archivos de los commits como un string con saltos de lineas
-(define mostrarCommits
-    (lambda (listaCommits stringCommits)
-        (if (null? (car listaCommits))
-            stringCommits
-            (mostrarCommits (cdr listaCommits) (string-append stringCommits "\n\n" (commit->string (car listaCommits))))
-            )
-        )
-    )
+;//Los operadores se encuentran en el archivo Git.rkt\\
