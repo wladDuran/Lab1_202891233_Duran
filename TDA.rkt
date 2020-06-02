@@ -433,7 +433,7 @@
 ;Sale un string con todos los archivos de los commits como un string con saltos de lineas
 (define mostrarCommits
     (lambda (listaCommits stringCommits)
-        (if (null? (car listaCommits))
+        (if (null? listaCommits)
             stringCommits
             (mostrarCommits (cdr listaCommits) (string-append stringCommits "\n\n" (commit->string (car listaCommits))))
             )
